@@ -52,7 +52,8 @@ def auto_enter(text):
 	return "\n\n".join(text)
 
 def main(temperature = 0.7, top_p = 0.8, top_k = 40, tmp_sent = "", text_size = 100, loops = 0, load_path = ""):
-	ctx = 'cuda'
+	# ctx = 'cuda'
+	ctx = 'cpu'
 	cachedir = '~/kogpt2/'
 	save_path = './checkpoint/'
 	# download model

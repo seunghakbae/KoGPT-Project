@@ -23,7 +23,7 @@ parser.add_argument('--load_path', type=str, default='./checkpoint/Alls/KoGPT2_c
 					help="학습된 결과를 불러오는 경로입니다.")
 parser.add_argument('--samples', type=str, default="samples/",
 					help="생성 결과를 저장할 경로입니다.")
-parser.add_argument('--data_file_path', type=str, default='dataset/lyrics_dataset.txt',
+parser.add_argument('--data_file_path', type=str, default='C:/Programming/Graduation_Project/KoGPT-Project/Data/processed_data/jisoo/jisoo_target.txt',
 					help="학습할 데이터를 불러오는 경로입니다.")
 parser.add_argument('--batch_size', type=int, default=8,
 					help="batch_size 를 지정합니다.")
@@ -86,22 +86,17 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 						   model_info['fname'],
 						   model_info['chksum'],
 						   cachedir=cachedir)
+
 	# download vocab
 	vocab_info = tokenizer
 	vocab_path = download(vocab_info['url'],
 						   vocab_info['fname'],
 						   vocab_info['chksum'],
 						   cachedir=cachedir)
-	print(vocab_info)
-	print(vocab_info['url'])
-	print(vocab_info['fname'])
-	print(vocab_info['chksum'])
-
-
-	exit()
 
 	# KoGPT-2 언어 모델 학습을 위한 GPT2LMHeadModel 선언
 	kogpt2model = GPT2LMHeadModel(config=GPT2Config.from_dict(kogpt2_config))
+
 
 	# model_path 로부터 다운로드 받은 내용을 load_state_dict 으로 업로드
 	kogpt2model.load_state_dict(torch.load(model_path))
@@ -111,14 +106,16 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 
 	# 불러오기 부분
 	try:
+		print('hi')
 		checkpoint = torch.load(load_path, map_location=device)
-
+		
 		# KoGPT-2 언어 모델 학습을 위한 GPT2LMHeadModel 선언
 		kogpt2model = GPT2LMHeadModel(config=GPT2Config.from_dict(kogpt2_config))
 		kogpt2model.load_state_dict(checkpoint['model_state_dict'])
 
 		kogpt2model.eval()
-	except:
+	except Exception as e:
+		print(e)
 		count = 0
 	else:
 		count = int(re.findall("\d+", load_path)[1])
@@ -141,6 +138,8 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 	tok = SentencepieceTokenizer(tok_path)
 
 	dataset = Read_Dataset(data_file_path, vocab, tok)
+
+	
 	print("Read_Dataset ok")
 	data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, pin_memory=True)
 
@@ -152,8 +151,11 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 
 	print('KoGPT-2 Transfer Learning Start')
 	avg_loss = (0.0, 0.0)
+	
+	# epoch = 1
 
-	for epoch in range(epoch):
+	# for epoch in range(epoch):
+	for epoch in range(1):
 		for data in data_loader:
 			optimizer.zero_grad()
 			data = torch.stack(data) # list of Tensor로 구성되어 있기 때문에 list를 stack을 통해 변환해준다.
@@ -171,13 +173,19 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 				print('epoch no.{0} train no.{1}  loss = {2:.5f} avg_loss = {3:.5f}' . format(epoch, count, loss, avg_loss[0] / avg_loss[1]))
 				summary.add_scalar('loss/avg_loss', avg_loss[0] / avg_loss[1], count)
 				summary.add_scalar('loss/loss', loss, count)
-
+				# exit()
+			
 			# generator 진행
-			if (count > 0 and count % 1000 == 0) or (len(data) < batch_size):
-				sent = sample_sequence(model.to("cpu"), tok, vocab, sent="사랑", text_size=100, temperature=0.7, top_p=0.8, top_k=40)
+# 			if (count > 0 and count % 1000 == 0) or (len(data) < batch_size):
+			if (count > 0 and count % 10 == 0) or (len(data) < batch_size):
+				sent = sample_sequence(model.to("cpu"), tok, vocab, sent="안녕 이름이 뭐니?", text_size=100, temperature=0.7, top_p=0.8, top_k=40)
+				# print(sent)
 				sent = sent.replace("<unused0>", "\n") # 비효율적이지만 엔터를 위해서 등장
+				# print(sent)
 				sent = auto_enter(sent)
-				print(sent)
+				# print(sent)
+
+				# exit()
 
 				summary.add_text('Text', sent, count)
 
@@ -190,9 +198,11 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 			#########################################
 			count += 1
 
-			if (count > 0 and count % 10000 == 0) or (len(data) < batch_size):
+			# if (count > 0 and count % 10000 == 0) or (len(data) < batch_size):
+			if (count > 0 and count % 10 == 0) or (len(data) < batch_size):
 				# 모델 저장
 				try:
+					print('saving...')
 					torch.save({
 						'epoch': epoch,
 						'train_no': count,
@@ -200,8 +210,12 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 						'optimizer_state_dict': optimizer.state_dict(),
 						'loss': loss
 					}, save_path + 'KoGPT2_checkpoint_' + str(count) + '.tar')
-				except:
+				except Exception as e:
+					print(e)
 					pass
+				
+				print('saved')
+				exit()
 
 if __name__ == "__main__":
 	main(args.epoch, args.save_path, args.load_path, args.samples, args.data_file_path, args.batch_size)

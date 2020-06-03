@@ -29,6 +29,9 @@ def top_p_logits(logits, top_p=0.0, filter_value=-float('Inf')):
 
 def sample_sequence(model, tok, vocab, sent, text_size, temperature, top_p, top_k):
     toked = tok(sent)
+
+    # print('toked : ', toked)
+
     count = 0
     generated_text = ''
 
@@ -53,19 +56,33 @@ def sample_sequence(model, tok, vocab, sent, text_size, temperature, top_p, top_
 
         gen = vocab.to_tokens(prev.squeeze().tolist())
 
+        print("gen : ", gen)
+
         # 끝나면 본격적으로 만들어 놓기.
         if gen == '</s>' or gen == '|' or count > text_size:
+            print('hi')
             print('to_tokens:', vocab.to_tokens(torch.argmax(pred, axis=-1).squeeze().tolist()))
             sent += gen.replace('▁', ' ')
+            print(sent)
             generated_text += gen.replace('▁', ' ')
+            print(generated_text)
             sent += '\n'
             generated_text += '\n'
             toked = tok(sent)
+            print('toked', toked)
             count = 0
             break
-
+        
+        print('hi2')
         sent += gen.replace('▁', ' ')
         generated_text += gen.replace('▁', ' ')
         toked = tok(sent)
         count += 1
+        
+        print("print(sent) : ")
+        print(sent)
+
+        print("generated_text : ")
+        print(generated_text)
+
     return sent
