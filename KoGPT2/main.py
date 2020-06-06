@@ -14,8 +14,10 @@ while 1:
   gen = vocab.to_tokens(torch.argmax(pred, axis=-1).squeeze().tolist())[-1]
   if gen == '</s>':
       break
+
   sent += gen.replace('▁', ' ')
   toked = tok(sent)
   print(toked)
+  break
   
 sent
