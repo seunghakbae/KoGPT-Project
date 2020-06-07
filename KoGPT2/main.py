@@ -12,6 +12,7 @@ while 1:
   input_ids = torch.tensor([vocab[vocab.bos_token],]  + vocab[toked]).unsqueeze(0)
   pred = model(input_ids)[0]
   gen = vocab.to_tokens(torch.argmax(pred, axis=-1).squeeze().tolist())[-1]
+  print(gen)
   if gen == '</s>':
       break
 
