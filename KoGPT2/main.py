@@ -6,7 +6,7 @@ from kogpt2.utils import get_tokenizer
 tok_path = get_tokenizer()
 model, vocab = get_pytorch_kogpt2_model()
 tok = SentencepieceTokenizer(tok_path)
-sent = '2019년 한해를 보내며,'
+sent = '오늘 날씨'
 toked = tok(sent)
 while 1:
   input_ids = torch.tensor([vocab[vocab.bos_token],]  + vocab[toked]).unsqueeze(0)

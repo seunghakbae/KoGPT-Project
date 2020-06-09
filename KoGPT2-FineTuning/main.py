@@ -23,9 +23,9 @@ parser.add_argument('--load_path', type=str, default='./checkpoint/Alls/KoGPT2_c
 					help="학습된 결과를 불러오는 경로입니다.")
 parser.add_argument('--samples', type=str, default="samples/",
 					help="생성 결과를 저장할 경로입니다.")
-parser.add_argument('--data_file_path', type=str, default='C:/Programming/Graduation_Project/KoGPT-Project/Data/processed_data/jisoo/jisoo_target.txt',
+parser.add_argument('--data_file_path', type=str, default='C:\Programming\Graduation_Project\Data\processed_data\jisoo\jisoo_target.txt',
 					help="학습할 데이터를 불러오는 경로입니다.")
-parser.add_argument('--batch_size', type=int, default=8,
+parser.add_argument('--batch_size', type=int, default=7,
 					help="batch_size 를 지정합니다.")
 args = parser.parse_args()
 
@@ -106,7 +106,6 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 
 	# 불러오기 부분
 	try:
-		print('hi')
 		checkpoint = torch.load(load_path, map_location=device)
 		
 		# KoGPT-2 언어 모델 학습을 위한 GPT2LMHeadModel 선언
@@ -152,10 +151,7 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 	print('KoGPT-2 Transfer Learning Start')
 	avg_loss = (0.0, 0.0)
 	
-	# epoch = 1
-
-	# for epoch in range(epoch):
-	for epoch in range(1):
+	for epoch in range(epoch):
 		for data in data_loader:
 			optimizer.zero_grad()
 			data = torch.stack(data) # list of Tensor로 구성되어 있기 때문에 list를 stack을 통해 변환해준다.
@@ -173,20 +169,14 @@ def main(epoch, save_path, load_path, samples, data_file_path, batch_size):
 				print('epoch no.{0} train no.{1}  loss = {2:.5f} avg_loss = {3:.5f}' . format(epoch, count, loss, avg_loss[0] / avg_loss[1]))
 				summary.add_scalar('loss/avg_loss', avg_loss[0] / avg_loss[1], count)
 				summary.add_scalar('loss/loss', loss, count)
-				# exit()
-			
+				
 			# generator 진행
 # 			if (count > 0 and count % 1000 == 0) or (len(data) < batch_size):
 			if (count > 0 and count % 10 == 0) or (len(data) < batch_size):
-				sent = sample_sequence(model.to("cpu"), tok, vocab, sent="안녕 이름이 뭐니?", text_size=100, temperature=0.7, top_p=0.8, top_k=40)
-				# print(sent)
+				sent = sample_sequence(model.to("cpu"), tok, vocab, sent="오늘 날씨", text_size=100, temperature=0.7, top_p=0.8, top_k=40)
 				sent = sent.replace("<unused0>", "\n") # 비효율적이지만 엔터를 위해서 등장
-				# print(sent)
 				sent = auto_enter(sent)
-				# print(sent)
-
-				# exit()
-
+				
 				summary.add_text('Text', sent, count)
 
 				if count > 500000:
