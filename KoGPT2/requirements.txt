@@ -5,6 +5,6 @@
 # transformers == 2.4.1
 
 gluonnlp==0.9.1
-mxnet==1.6.0
+mxnet==1.9.1
 sentencepiece==0.1.85
 transformers==2.6.0
